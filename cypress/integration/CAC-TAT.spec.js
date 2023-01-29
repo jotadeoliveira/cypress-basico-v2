@@ -2,6 +2,8 @@
 
 //LESSON01
 describe('Central de Atendimento ao Cliente TAT', function () {
+	const threeSecondsInMS = 3000
+	
 	beforeEach(() => {
 		cy.visit('./src/index.html')
 	})
@@ -13,6 +15,8 @@ describe('Central de Atendimento ao Cliente TAT', function () {
 //LESSON02
 	//EXERCÍCIO EXTRA 1
 	it('preenche os campos obrigatórios e envia o formulário', function () {
+		cy.clock()
+		
 		cy.get('#firstName').type('Jonatas', { 'delay': 0 })
 		cy.get('#lastName').type('de Oliveira')
 		cy.get('#email').type('csjconf@hotmail.com')
@@ -20,17 +24,22 @@ describe('Central de Atendimento ao Cliente TAT', function () {
 		cy.contains('button', 'Enviar').click()
 
 		cy.get('.success').should('be.visible')
+		cy.tick(threeSecondsInMS)
+		cy.get('.success').should('not.be.visible')
 	})
 
 	//EXERCÍCIO EXTRA 2
 	it('exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', function () {
+		cy.clock()
+
 		cy.get('#firstName').type('Jonatas', { delay: 0 })
 		cy.get('#lastName').type('de Oliveira')
 		cy.get('#email').type('csjconf!hotmail.com')
 		cy.get('#open-text-area').type('Cursos de Cypress')
 		cy.contains('button', 'Enviar').click()
-
 		cy.get('.error').should('be.visible')
+		cy.tick(threeSecondsInMS)
+		cy.get('.error').should('not.be.visible')
 	})
 
 	//EXERCÍCIO EXTRA 3
@@ -42,14 +51,18 @@ describe('Central de Atendimento ao Cliente TAT', function () {
 
 	//EXERCÍCIO EXTRA 4
 	it('exibe mensagem de erro quando o telefone se torna obrigatório mas não é preenchido antes do envio do formulário', function () {
+		cy.clock()
+		
 		cy.get('#firstName').type('Jonatas')
 		cy.get('#lastName').type('de Oliveira')
 		cy.get('#email').type('csjconf@hotmail.com')
 		cy.get('#phone-checkbox').check()
 		cy.get('#open-text-area').type('Cursos de Cypress')
 		cy.contains('button', 'Enviar').click()
-
+		
 		cy.get('.error').should('be.visible')
+		cy.tick(threeSecondsInMS)
+		cy.get('.error').should('not.be.visible')
 	})
 
 	//EXERCÍCIO EXTRA 5
@@ -81,9 +94,12 @@ describe('Central de Atendimento ao Cliente TAT', function () {
 
 	//EXERCÍCIO EXTRA 6
 	it('exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios', function () {
-		cy.contains('button', 'Enviar').click()
+		cy.clock()
 
+		cy.contains('button', 'Enviar').click()
 		cy.get('.error').should('be.visible')
+		cy.tick(threeSecondsInMS)
+		cy.get('.error').should('not.be.visible')
 	})
 
 	//EXERCÍCIO EXTRA 7
@@ -198,4 +214,49 @@ describe('Central de Atendimento ao Cliente TAT', function () {
 			.should('be.visible')
 	})
 
+//LESSON11
+	//EXERCÍCIO EXTRA 02
+	it('exibe e esconde as mensagens de sucesso e erro usando o .invoke()', function () {
+		cy.get('.success')
+			.should('not.be.visible')
+			.invoke('show')
+			.should('be.visible')
+			.and('contain', 'Mensagem enviada com sucesso.')
+			.invoke('hide')
+			.should('not.be.visible')
+		cy.get('.error')
+			.should('not.be.visible')
+			.invoke('show')
+			.should('be.visible')
+			.and('contain', 'Valide os campos obrigatórios!')
+			.invoke('hide')
+			.should('not.be.visible')
+		})
+	
+	//EXERCÍCIO EXTRA 03
+	it('preenche a area de texto usando o comando invoke', function () {
+		const longTextInput = Cypress._.repeat('Cursos de Cypress Básico, Intermediário e Avançado ', 5)
+		cy.get('#open-text-area')
+			.invoke('val', longTextInput)
+			.should('have.value', longTextInput)
+	})
+
+	//EXERCÍCIO EXTRA 04
+	it('faz uma requisição HTTP', function () {
+		cy.request('https://cac-tat.s3.eu-central-1.amazonaws.com/index.html')
+			.should(function (response) {
+				const { status, statusText, body } = response
+			expect(status).to.equal(200);
+			expect(statusText).to.equal('OK');
+			expect(body).to.include('CAC TAT')
+		})
+	})
+
+//LESSON12
+	//DESAFIO ENCONTRE O GATO
+	it('Desafio encontre o gato escondido', function () {
+		cy.get('#cat')
+			.invoke('show')
+			.should('be.visible')
+	})
 })
